@@ -63,11 +63,10 @@ jobs:
         mkdir build && cd build
         cmake .. \
           -GNinja \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DNO_GTK=OFF \
           -DOpenGL_GL_PREFERENCE=GLVND \
           -DCMAKE_POLICY_DEFAULT_CMP0148=OLD \
-
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-as-needed -Wl,--undefined=__start_yreg" \
+          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=bfd"
     - name: Build Engine
       run: ninja -C build
 
