@@ -75,7 +75,7 @@ jobs:
           -DCMAKE_POLICY_DEFAULT_CMP0148=OLD \
           -DOpenGL_GL_PREFERENCE=GLVND \
           -DCMAKE_CXX_FLAGS="-O2 -fno-strict-aliasing -fcommon -Wno-error" \
-          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-gc-sections -Wl,--no-as-needed -Wl,--undefined=__start_yreg -Wl,--undefined=__start_areg"
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-gc-sections -Wl,--no-as-needed -Wl,--undefined=__start_yreg -Wl,--undefined=__start_areg" \
           -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=bfd"
           ninja
           
@@ -92,7 +92,8 @@ jobs:
           -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_POLICY_DEFAULT_CMP0148=OLD \
           -DCMAKE_CXX_FLAGS="-O2 -fno-strict-aliasing -fcommon -Wno-error" \
-          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-gc-sections -Wl,--no-as-needed -Wl,--undefined=__start_yreg -Wl,--undefined=__start_areg"
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-gc-sections -Wl,--no-as-needed -Wl,--undefined=__start_yreg -Wl,--undefined=__start_areg" \
+          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=bfd"
         ninja
         
     - name: Assemble Full Distribution Folder
