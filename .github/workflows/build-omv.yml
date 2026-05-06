@@ -57,15 +57,23 @@ jobs:
         ./autogen.sh
         make -j$(nproc)
         make install
+    - name: Build fmodex-zdoom-linux64-4.26.36
+      run: |
+        git clone https://github.com/supersonic-xserver/fmodex-zdoom-linux64-4.26.36 /tmp/fmodex-zdoom-linux64-4.26.36
+        cd /tmp/fmodex-zdoom-linux64-4.26.36
+        make install
 
     - name: Configure CMake
       run: |
         mkdir build && cd build
         cmake .. \
           -GNinja \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
           -DOpenGL_GL_PREFERENCE=GLVND \
           -DCMAKE_POLICY_DEFAULT_CMP0148=OLD \
-          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-as-needed -Wl,--undefined=__start_yreg" \
+          -DCMAKE_CXX_FLAGS="-O2 -fno-strict-aliasing -fcommon -Wno-error" \
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-gc-sections -Wl,--no-as-needed -Wl,--undefined=__start_yreg -Wl,--undefined=__start_areg"
           -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=bfd"
     - name: Build Engine
       run: ninja -C build
