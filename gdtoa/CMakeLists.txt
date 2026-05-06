@@ -45,6 +45,7 @@ add_library( gdtoa
 	)
 target_link_libraries( gdtoa )
 if( GEN_FP_DEPS )
-	add_dependencies( gdtoa ${GEN_FP_DEPS} )
+add_custom_target(gdtoa_headers DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/arith.h" "${CMAKE_CURRENT_BINARY_DIR}/gd_qnan.h")
+add_dependencies(gdtoa gdtoa_headers)
 endif( GEN_FP_DEPS )
 
