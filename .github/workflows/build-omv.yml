@@ -1,0 +1,79 @@
+name: Q-Zandronum Cooker CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-cooker:
+    runs-on: ubuntu-latest
+    # Using the official OpenMandriva Cooker container
+    container: openmandriva/cooker
+
+    steps:
+    - name: Bootstrap Git
+      run: dnf install -y --nogpgcheck git-core
+      
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Build Dependencies
+      run: |
+        dnf install -y --nogpgcheck \
+          cmake \
+          make binutils \
+          clang \
+          gcc-c++ \
+          ninja \
+          python3 \
+          glibc-devel \
+          lib64SDL-devel \
+          lib64SDL2-devel \
+          lib64SDL2_mixer-devel \
+          lib64openal-devel \
+          lib64sndfile-devel \
+          lib64mpg123-devel \
+          lib64fluidsynth-devel \
+          lib64openssl-devel \
+          lib64xcursor-devel \
+          lib64glib2.0-devel \
+          lib64pango1.0-devel \
+          libpangocairo1.0-devel \
+          lib64cairo-devel \
+          lib64atk1.0-devel \
+          lib64gdk_pixbuf2.0-devel \
+          gtk-doc automake autoconf libtool lib64gettext-devel
+
+    - name: Build gtk2-ng
+      run: |
+        git clone https://git.devuan.org/Daemonratte/gtk2-ng.git /tmp/gtk2-ng-src
+        cd /tmp/gtk2-ng-src
+        # Installing to /opt to match your local 5800X3D layout
+        ./autogen.sh --prefix=/opt/gtk2-ng
+        make -j$(nproc)
+        make install
+
+    - name: Configure CMake
+      run: |
+        mkdir build && cd build
+        export PKG_CONFIG_PATH=/opt/gtk2-ng/lib/pkgconfig:$PKG_CONFIG_PATH
+        cmake .. \
+          -GNinja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DNO_GTK=OFF \
+          -DOpenGL_GL_PREFERENCE=GLVND \
+          -DCMAKE_POLICY_DEFAULT_CMP0148=OLD \
+          -DGTK2_GDKCONFIG_INCLUDE_DIR=/opt/gtk2-ng/lib/gtk-2.0/include \
+          -DGTK2_GLIBCONFIG_INCLUDE_DIR=/opt/gtk2-ng/lib/glib-2.0/include
+
+    - name: Build Engine
+      run: ninja -C build
+
+
+
+
+
