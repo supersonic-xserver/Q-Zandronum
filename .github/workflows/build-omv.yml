@@ -57,28 +57,67 @@ jobs:
         ./autogen.sh
         make -j$(nproc)
         make install
+        
     - name: Build fmodex-zdoom-linux64-4.26.36
       run: |
         git clone https://github.com/supersonic-xserver/fmodex-zdoom-linux64-4.26.36 /tmp/fmodex-zdoom-linux64-4.26.36
         cd /tmp/fmodex-zdoom-linux64-4.26.36
         make install
 
-    - name: Configure CMake
+    - name: Configure and Build Client
       run: |
         mkdir build && cd build
         cmake .. \
           -GNinja \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
-          -DOpenGL_GL_PREFERENCE=GLVND \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_POLICY_DEFAULT_CMP0148=OLD \
+          -DOpenGL_GL_PREFERENCE=GLVND \
           -DCMAKE_CXX_FLAGS="-O2 -fno-strict-aliasing -fcommon -Wno-error" \
           -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-gc-sections -Wl,--no-as-needed -Wl,--undefined=__start_yreg -Wl,--undefined=__start_areg"
           -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=bfd"
-    - name: Build Engine
-      run: ninja -C build
+          ninja
+          
+    - name: Configure and Build Server
+      run: |
+        mkdir -p build_server && cd build_server
+        cmake .. \
+          -GNinja \
+          -DSERVERONLY=ON \
+          -DNO_GUI=ON \
+          -DNO_FMOD=ON \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DCMAKE_POLICY_DEFAULT_CMP0148=OLD \
+          -DCMAKE_CXX_FLAGS="-O2 -fno-strict-aliasing -fcommon -Wno-error" \
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -Wl,--no-gc-sections -Wl,--no-as-needed -Wl,--undefined=__start_yreg -Wl,--undefined=__start_areg"
+        ninja
+        
+    - name: Assemble Full Distribution Folder
+      run: |
+        # Create a structured distribution folder
+        DIST_DIR="q-zandronum-linux64-cooker"
+        mkdir -p $DIST_DIR
+        # Mirror the full client build tree
+        # Use -a (archive) to preserve symlinks and permissions
+        cp -a build_client/. $DIST_DIR/
+        # Mirror the full server build tree
+        # This will merge the server binaries into the same folder structure
+        cp -a build_server/. $DIST_DIR/
+        # Additionally, grab the Samsara and Map files from the root
+        cp *.pk3 $DIST_DIR/ 2>/dev/null || :
+        cp *.wad $DIST_DIR/ 2>/dev/null || :
+        # Add a simple launch script for the server
+        echo "./q-zandronum-server -iwad doom2.wad -file q-zandronum.pk3 +set sv_maxplayers 2 +set sv_maxclients 10 +set sv_minplayers 1 +map map01 +deathmatch 1" > $DIST_DIR/start_samsara_server.sh
+        chmod +x $DIST_DIR/start_samsara_server.sh
 
-
+    - name: Upload Complete Distribution
+      uses: actions/upload-artifact@v4
+      with:
+        name: q-zandronum-full-dist-linux64
+        path: q-zandronum-linux64-cooker/
 
 
 
