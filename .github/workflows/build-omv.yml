@@ -46,6 +46,7 @@ jobs:
           lib64cairo-devel \
           lib64atk1.0-devel \
           lib64gdk_pixbuf2.0-devel \
+          lib64glew-devel \
           gtk-doc automake autoconf libtool lib64gettext-devel
 
     - name: Build gtk2-ng
