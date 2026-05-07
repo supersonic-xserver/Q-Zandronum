@@ -66,7 +66,7 @@ jobs:
 
     - name: Configure and Build Client
       run: |
-        mkdir build && cd build
+        mkdir build_client && cd build_client
         cmake .. \
           -GNinja \
           -DCMAKE_C_COMPILER=clang \
